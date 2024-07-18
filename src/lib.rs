@@ -16,10 +16,6 @@ pub fn circular_left_shift(x: u32, n: u32) -> u32 {
 /// 2. Append 0 bits until the length of the message is congruent to 448 mod 512
 /// 3. Append the length of the message in bits as a 64 bit number
 pub fn message_padding(message: &[u8]) -> Vec<u8> {
-    // get the message and that is the first bytes
-    // append 1 bit to the message
-    // append 0 bits until the length of the message is congruent to 448 mod 512
-    // append the length of the message in bits as a 64 bit number
     let message_len_bits = (message.len() * 8) as u64;
     let mut message_bytes = Vec::from(message);
 
