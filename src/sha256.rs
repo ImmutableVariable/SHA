@@ -31,40 +31,28 @@ pub fn message_padding(message: &[u8]) -> Vec<u8> {
     message_bytes
 }
 
-// functions
-
-/// The function ch(x, y, z) is defined as follows:
-/// ch(x, y, z) = (x AND y) XOR ((NOT x) AND z)
+// functions for the hash algorithm 
 pub fn ch(x: u32, y: u32, z: u32) -> u32 {
     (x & y) ^ ((!x) & z)
 }
 
-/// The function maj(x, y, z) is defined as follows:
-/// maj(x, y, z) = (x AND y) XOR (x AND z) XOR (y AND z)
 pub fn maj(x: u32, y: u32, z: u32) -> u32 {
     (x & y) ^ (x & z) ^ (y & z)
 }
 
-/// The function Σ0(x) is defined as follows:
-/// Σ0(x) = (x rightrotate 2) XOR (x rightrotate 13) XOR (x rightrotate 22)
 pub fn big_sigma_0(x: u32) -> u32 {
     circular_right_shift(x, 2) ^ circular_right_shift(x, 13) ^ circular_right_shift(x, 22)
 }
 
-/// The function Σ1(x) is defined as follows:
-/// Σ1(x) = (x rightrotate 6) XOR (x rightrotate 11) XOR (x rightrotate 25)
 pub fn big_sigma_1(x: u32) -> u32 {
     circular_right_shift(x, 6) ^ circular_right_shift(x, 11) ^ circular_right_shift(x, 25)
 }
 
-/// The function σ0(x) is defined in fips-180-2.pdf as 
-/// σ0(x) = (x rightrotate 7) XOR (x rightrotate 18) XOR (x rightshift 3)
 pub fn small_sigma_0(x: u32) -> u32 {
     circular_right_shift(x, 7) ^ circular_right_shift(x, 18) ^ (x >> 3)
 }
 
-/// The function σ1(x) is defined as this
-/// σ1(x) = (x rightrotate 17) XOR (x rightrotate 19) XOR (x rightshift 10)
+
 pub fn small_sigma_1(x: u32) -> u32 {
     circular_right_shift(x, 17) ^ circular_right_shift(x, 19) ^ (x >> 10)
 }
