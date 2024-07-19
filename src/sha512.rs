@@ -99,7 +99,7 @@ pub fn small_sigma_1(x: u64) -> u64 {
 /// let message = b"hello world";
 /// let result = hash(message);
 /// 
-/// for h in hash.iter() {
+/// for h in result.iter() {
 ///     print!("{:x}", h); // see https://emn178.github.io/online-tools/sha512.html?input=hi&input_type=utf-8&output_type=hex&hmac_input_type=utf-8
 /// }
 /// println!();
@@ -184,7 +184,7 @@ mod tests {
     }
 
     #[test]
-    fn test_hash() {
+    fn test_hash_sha512() {
         let message = b"hello world";
         let result = hash(message);
 
@@ -195,4 +195,18 @@ mod tests {
 
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn test_hash_sha512_multi_block() {
+        let message = b"a".repeat(1000000); // fips-180-2.pdf
+        let result = hash(&message);
+
+        let expected = [
+            0xe718483d0ce76964, 0x4e2e42c7bc15b463, 0x8e1f98b13b204428, 0x5632a803afa973eb,
+            0xde0ff244877ea60a, 0x4cb0432ce577c31b, 0xeb009c5c2c49aa2e, 0x4eadb217ad8cc09b
+        ];
+
+        assert_eq!(result, expected);
+    }
+
 }

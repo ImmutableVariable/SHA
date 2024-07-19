@@ -188,12 +188,23 @@ mod tests {
     }
 
     #[test]
-    fn hash_test() {
+    fn hash_test_sha256() {
         let message = b"hello world";
         let hash = hash(message);
         assert_eq!(hash, [
              0xb94d27b9, 0x934d3e08, 0xa52e52d7, 0xda7dabfa, 0xc484efe3, 0x7a5380ee, 0x9088f7ac, 0xe2efcde9
         ]);
     }
+
+    #[test]
+    fn hash_test_sha256_multi_block() {
+        let message = b"a".repeat(1000);
+        let hash = hash(&message);
+
+        assert_eq!(hash, [
+            0x41edece4, 0x2d63e8d9, 0xbf515a9b, 0xa6932e1c, 0x20cbc9f5, 0xa5d13464, 0x5adb5db1, 0xb9737ea3
+        ]);
+    }
 }
+
 
