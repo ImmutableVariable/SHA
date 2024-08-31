@@ -1,17 +1,5 @@
 // sha256 as per https://csrc.nist.gov/files/pubs/fips/180-2/final/docs/fips180-2.pdf
 
-/// A circular left shift operation is defined by the following:
-/// (X << n) OR (X >> (32 - n))
-pub fn circular_left_shift(x: u32, n: u32) -> u32 {
-    (x << n) | (x >> (32 - n))
-}
-
-/// A circular right shift operation is defined by the following:
-/// (X >> n) OR (X << (32 - n))
-pub fn circular_right_shift(x: u32, n: u32) -> u32 {
-    (x >> n) | (x << (32 - n))
-}
-
 /// Following the standard, the message is to be padded as follows:
 /// 1. Append a 1 bit to the message
 /// 2. Append 0 bits until the length of the message is congruent to 448 mod 512
@@ -24,7 +12,7 @@ pub fn message_padding(message: &[u8]) -> Vec<u8> {
     message_bytes.push(0x80); 
  
     let padding_len = (64 - (message_bytes.len() + 8) % 64) % 64;
-    message_bytes.extend(vec![0; padding_len]);
+    message_bytes.extend(std::iter::repeat(0).take(padding_len));
 
     message_bytes.extend_from_slice(&message_len_bits.to_be_bytes());
 
@@ -41,20 +29,19 @@ pub fn maj(x: u32, y: u32, z: u32) -> u32 {
 }
 
 pub fn big_sigma_0(x: u32) -> u32 {
-    circular_right_shift(x, 2) ^ circular_right_shift(x, 13) ^ circular_right_shift(x, 22)
+    x.rotate_right(2) ^ x.rotate_right(13) ^ x.rotate_right(22)
 }
 
 pub fn big_sigma_1(x: u32) -> u32 {
-    circular_right_shift(x, 6) ^ circular_right_shift(x, 11) ^ circular_right_shift(x, 25)
+    x.rotate_right(6) ^ x.rotate_right(11) ^ x.rotate_right(25)
 }
 
 pub fn small_sigma_0(x: u32) -> u32 {
-    circular_right_shift(x, 7) ^ circular_right_shift(x, 18) ^ (x >> 3)
+    x.rotate_right(7) ^ x.rotate_right(18) ^ (x >> 3)
 }
 
-
 pub fn small_sigma_1(x: u32) -> u32 {
-    circular_right_shift(x, 17) ^ circular_right_shift(x, 19) ^ (x >> 10)
+    x.rotate_right(17) ^ x.rotate_right(19) ^ (x >> 10)
 }
 
 /// Constants K as defined in the standard
@@ -167,12 +154,6 @@ mod tests {
         let message = b"hello world";
         let padded_message = message_padding(message);
         assert_eq!(padded_message.len() % 64, 0); // padded message should be a multiple of 512 bits
-    }
-
-    #[test]
-    fn circular_left_shift_test() {
-        assert_eq!(circular_left_shift(0x80000000, 1), 1);
-        assert_eq!(circular_left_shift(0x80000000, 31), 1073741824);
     }
 
     #[test]

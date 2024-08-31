@@ -5,12 +5,6 @@ pub const K: [u32; 4] = [0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6];
 /// Initial hash values for SHA-1
 pub const H: [u32; 5] = [0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0];
 
-/// A circular left shift operation is defined by the following:
-/// (X << n) OR (X >> (32 - n))
-pub fn circular_left_shift(x: u32, n: u32) -> u32 {
-    (x << n) | (x >> (32 - n))
-}
-
 /// Following the standard, the message is to be padded as follows:
 /// 1. Append a 1 bit to the message
 /// 2. Append 0 bits until the length of the message is congruent to 448 mod 512
@@ -24,7 +18,7 @@ pub fn message_padding(message: &[u8]) -> Vec<u8> {
  
     // message must be a multiple of 512 bits, so add padding to the message until it is
     let padding_len = (64 - (message_bytes.len() + 8) % 64) % 64;
-    message_bytes.extend(vec![0; padding_len]);
+    message_bytes.extend(std::iter::repeat(0).take(padding_len));
 
     // now just append the length of the message (as stated in the standard)
     message_bytes.extend_from_slice(&message_len_bits.to_be_bytes());
@@ -102,7 +96,7 @@ pub fn hash(message: &[u8]) -> [u32; 5] {
             ]);
         }
         for t in 16..80 {
-            w[t] = circular_left_shift(w[t - 3] ^ w[t - 8] ^ w[t - 14] ^ w[t - 16], 1);
+            w[t] = (w[t - 3] ^ w[t - 8] ^ w[t - 14] ^ w[t - 16]).rotate_left(1);
         }
         let mut a = h[0];
         let mut b = h[1];
@@ -111,14 +105,14 @@ pub fn hash(message: &[u8]) -> [u32; 5] {
         let mut e = h[4];
         for t in 0..80 {
             let temp = 
-                circular_left_shift(a, 5)
+                a.rotate_left(5)
                 .wrapping_add(func_f(t, b, c, d))
                 .wrapping_add(e)
                 .wrapping_add(w[t as usize])
                 .wrapping_add(get_k(t));
             e = d;
             d = c;
-            c = circular_left_shift(b, 30);
+            c = b.rotate_left(30);
             b = a;
             a = temp;
         }
@@ -141,12 +135,6 @@ mod tests {
         let message = b"hello world";
         let padded_message = message_padding(message);
         assert_eq!(padded_message.len() % 64, 0); // padded message should be a multiple of 512 bits
-    }
-
-    #[test]
-    fn circular_left_shift_test() {
-        assert_eq!(circular_left_shift(0x80000000, 1), 1);
-        assert_eq!(circular_left_shift(0x80000000, 31), 1073741824);
     }
 
     #[test]

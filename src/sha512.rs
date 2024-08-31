@@ -1,17 +1,5 @@
 // sha512.rs contains code from https://csrc.nist.gov/files/pubs/fips/180-2/final/docs/fips180-2.pdf
 
-/// A circular left shift operation is defined by the following:
-/// (X << n) OR (X >> (32 - n))
-pub fn circular_left_shift(x: u64, n: u64) -> u64 {
-    (x << n) | (x >> (64 - n))
-}
-
-/// A circular right shift operation is defined by the following:
-/// (X >> n) OR (X << (32 - n))
-pub fn circular_right_shift(x: u64, n: u64) -> u64 {
-    (x >> n) | (x << (64 - n))
-}
-
 /// Following the standard, the message is to be padded as follows:
 /// 1. Append a 1 bit to the message
 /// 2. Append 0 bits until the length of the message is congruent to 896 mod 1024
@@ -25,7 +13,7 @@ pub fn message_padding(message: &[u8]) -> Vec<u8> {
     // Calculate padding length for 1024-bit block size
     // The total length (message + padding + length field) should be a multiple of 1024 bits
     let padding_len = (128 - (message_bytes.len() + 16) % 128) % 128;
-    message_bytes.extend(vec![0; padding_len]);
+    message_bytes.extend(std::iter::repeat(0).take(padding_len));
 
     message_bytes.extend_from_slice(&message_len_bits.to_be_bytes());
 
@@ -76,19 +64,19 @@ pub fn maj(x: u64, y: u64, z: u64) -> u64 {
 }
 
 pub fn big_sigma_0(x: u64) -> u64 {
-    circular_right_shift(x, 28) ^ circular_right_shift(x, 34) ^ circular_right_shift(x, 39)
+    x.rotate_right(28) ^ x.rotate_right(34) ^ x.rotate_right(39)
 }
 
 pub fn big_sigma_1(x: u64) -> u64 {
-    circular_right_shift(x, 14) ^ circular_right_shift(x, 18) ^ circular_right_shift(x, 41)
+    x.rotate_right(14) ^ x.rotate_right(18) ^ x.rotate_right(41)
 }
 
 pub fn small_sigma_0(x: u64) -> u64 {
-    circular_right_shift(x, 1) ^ circular_right_shift(x, 8) ^ (x >> 7)
+    x.rotate_right(1) ^ x.rotate_right(8) ^ (x >> 7)
 }
 
 pub fn small_sigma_1(x: u64) -> u64 {
-    circular_right_shift(x, 19) ^ circular_right_shift(x, 61) ^ (x >> 6)
+    x.rotate_right(19) ^ x.rotate_right(61) ^ (x >> 6)
 }
 
 /// The hash function for SHA-512
